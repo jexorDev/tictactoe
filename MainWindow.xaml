@@ -21,8 +21,11 @@
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
-
         </Grid.ColumnDefinitions>
+
+        <Border Grid.Row="1" Grid.ColumnSpan="3" BorderBrush="Black" BorderThickness="0,3,0,3"/>
+        <Border Grid.RowSpan="3" Grid.Column="1" BorderBrush="Black" BorderThickness="3,0,3,0"/>
+
         <Button Content="{Binding Path=Button00Text}" Name="btn_0_0" Grid.Row="0" Grid.Column="0" Height="27" Width="30"/>
         <Button Content="{Binding Path=Button01Text}" Name="btn_0_1" Grid.Row="0" Grid.Column="1" Height="27" Width="30"/>
         <Button Content="{Binding Path=Button02Text}" Name="btn_0_2" Grid.Row="0" Grid.Column="2" Height="27" Width="30"/>
@@ -32,10 +35,19 @@
         <Button Content="{Binding Path=Button20Text}" Name="btn_2_0" Grid.Row="2" Grid.Column="0" Height="27" Width="30"/>
         <Button Content="{Binding Path=Button21Text}" Name="btn_2_1" Grid.Row="2" Grid.Column="1" Height="27" Width="30"/>
         <Button Content="{Binding Path=Button22Text}" Name="btn_2_2" Grid.Row="2" Grid.Column="2" Height="27" Width="30"/>
-        <Label Content="{Binding Path=MainLabelText}" Name="mainLabel" Grid.Row="0" Grid.Column="3" Width="220"/>
-        <Button Content="Reset" Click="ResetButtonClick"></Button>
-
-
-
+        
+        <GroupBox Grid.Row="0" Grid.Column="3" Header="Status">
+            <Label Content="{Binding Path=MainLabelText}" Name="mainLabel" Width="220"/>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Grid.Column="3" Header="Difficulty">
+            
+                <!--<ComboBox SelectedValue="{Binding Difficulty, Mode=TwoWay, XPath=Tag}" Margin="5,0,5,5">
+                    <ComboBoxItem Content="Easy"  Tag="0"/>
+                    <ComboBoxItem Content="Hard" Tag="1"/>
+                    <ComboBoxItem Content="Impossible" Tag="2"/>
+                </ComboBox>-->
+                
+        </GroupBox>
+        <Button Content="Reset" Click="ResetButtonClick" Grid.Row="2" Grid.Column="3" Height="20" Margin="5" />
     </Grid>
 </Window>

@@ -24,16 +24,12 @@ namespace TickTacToe
             }
         }
 
-
         public void PerformPlayerTurn(int x, int y)
         {
-            
-
             _board[x, y] = _playerSymbol;
             NotifyPropertyChanged($"Button{x}{y}Text");
 
-
-            var playerWon = HasWinningRow(_playerSymbol);
+            var playerWon = HasWinningRow(_board, _playerSymbol);
 
             if (playerWon)
             {
@@ -42,10 +38,8 @@ namespace TickTacToe
 
                 return;
             }
-
-           
             
-            if (!HasSpotAvailable())
+            if (!HasSpotAvailable(_board))
             {
                 MainLabelText = "Cat's game";
                 NotifyPropertyChanged(nameof(MainLabelText));
@@ -55,7 +49,7 @@ namespace TickTacToe
 
             PerformComputersTurn();
 
-            var computerWon = HasWinningRow(_playerSymbol);
+            var computerWon = HasWinningRow(_board, _computerSymbol);
 
             if (computerWon)
             {
@@ -64,10 +58,22 @@ namespace TickTacToe
 
                 return;
             }
-
         }
 
         private void PerformComputersTurn()
+        {
+            if (Difficulty == "Easy")
+            {
+                //PerformComputersTurnEasy();
+            }
+            else if (Difficulty == "Hard")
+            {
+            }
+            PerformComputersTurnHard();
+            //TODO: Impossible
+        }
+
+        private void PerformComputersTurnEasy()
         {
             var random = new Random();
 
@@ -84,43 +90,164 @@ namespace TickTacToe
             }
         }
 
-        private bool HasSpotAvailable()
+        private void PerformComputersTurnHard()
+        {
+            //var boardCopy = GetCopyOfBoard(_board);
+            //var nextSpot = NextAvailableSpot(boardCopy);
+            (int?, int?) chosenSpot = (null, null);
+
+            for (int row = 0; row < 3; row++)
+            {
+                for (int column = 0; column < 3; column++)
+                {
+                    if (_board[row, column] == _playerSymbol)
+                    {
+                        if (IsSpotOpen(row, column, _board, Direction.Up))
+                        {
+                            if (NextPlayWouldResultInWin(row - 1, column, GetCopyOfBoard(_board), _playerSymbol))
+                            {
+                                chosenSpot = (row - 1, column);
+                            }
+                        }
+                        if (IsSpotOpen(row, column, _board, Direction.Down))
+                        {
+                            if (NextPlayWouldResultInWin(row + 1, column, GetCopyOfBoard(_board), _playerSymbol))
+                            {
+                                chosenSpot = (row + 1, column);
+                            }
+                        }
+                        if (IsSpotOpen(row, column, _board, Direction.Left))
+                        {
+                            if (NextPlayWouldResultInWin(row, column - 1, GetCopyOfBoard(_board), _playerSymbol))
+                            {
+                                chosenSpot = (row, column - 1);
+                            }
+                        }
+                        if (IsSpotOpen(row, column, _board, Direction.Right))
+                        {
+                            if (NextPlayWouldResultInWin(row, column + 1, GetCopyOfBoard(_board), _playerSymbol))
+                            {
+                                chosenSpot = (row, column + 1);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //while (nextSpot != (null, null) & chosenSpot == (null, null))
+            //{
+            //    boardCopy[nextSpot.Item1.Value, nextSpot.Item2.Value] = _playerSymbol;
+
+            //    if (HasWinningRow(boardCopy, _playerSymbol))
+            //    {
+            //        chosenSpot = nextSpot;
+            //    }
+            //    else
+            //    {
+            //        nextSpot = NextAvailableSpot(boardCopy);
+            //    }
+            //}
+            
+            if (chosenSpot == (null, null))
+            {
+                PerformComputersTurnEasy();
+            }
+            else
+            {
+                _board[chosenSpot.Item1.Value, chosenSpot.Item2.Value] = _computerSymbol;
+                NotifyPropertyChanged($"Button{chosenSpot.Item1.Value}{chosenSpot.Item2.Value}Text");
+            }
+        }
+
+        private bool NextPlayWouldResultInWin(int x, int y, char[,] board, char player)
+        {
+            board[x, y] = player;
+            return HasWinningRow(board, player);
+        }
+
+        private static bool IsSpotOpen(int x, int y, char[,] board, Direction direction)
+        {
+            if (direction == Direction.Down)
+            {
+                if (y == 2) return false;
+                y++;
+            }
+            if (direction == Direction.Up)
+            {
+                if (y == 0) return false;
+                y--;
+            }
+            if (direction == Direction.Right)
+            {
+                if (x == 2) return false;
+                x++;
+            }
+            if (direction == Direction.Left)
+            {
+                if (x == 0) return false;
+                x--;
+            }
+
+            return board[x, y] == ' ';
+        }
+
+        private static bool HasSpotAvailable(char[,] board)
+        {
+            return NextAvailableSpot(board) != (null, null);
+        }
+
+        private static (int?, int?) NextAvailableSpot(char[,] board)
         {
             for (int row = 0; row < 3; row++)
             {
                 for (int column = 0; column < 3; column++)
                 {
-                    if (_board[row, column] == ' ')
+                    if (board[row, column] == ' ')
                     {
-                        return true;
+                        return (row, column);
                     }
                 }
             }
 
-            return false;
+            return (null, null);
         }
 
-        private bool HasWinningRow(char symbol)
+        private static char[,] GetCopyOfBoard(char[,] board)
+        {
+            var boardCopy = new char[3,3];
+
+            for (int row = 0; row < 3; row++)
+            {
+                for (int column = 0; column < 3; column++)
+                {
+                    boardCopy[row, column] = board[row, column];
+                }
+            }
+
+            return boardCopy;
+        }
+
+        private static bool HasWinningRow(char[,] board, char symbol)
         {
             for (int row = 0; row < 3; row++)
             {
-                if (_board[row, 0] == symbol && _board[row, 1] == symbol && _board[row, 2] == symbol)
+                if (board[row, 0] == symbol && board[row, 1] == symbol && board[row, 2] == symbol)
                 {
                     return true;
                 }
             }
             for (int column = 0; column < 3; column++)
             {
-                if (_board[0, column] == symbol && _board[1, column] == symbol && _board[2, column] == symbol)
+                if (board[0, column] == symbol && board[1, column] == symbol && board[2, column] == symbol)
                 {
                     return true;
                 }
             }
-            if (_board[0, 0] == symbol && _board[1, 1] == symbol && _board[2, 2] == symbol)
+            if (board[0, 0] == symbol && board[1, 1] == symbol && board[2, 2] == symbol)
             {
                 return true;
             }
-            if (_board[0, 2] == symbol && _board[1, 1] == symbol && _board[2, 0] == symbol)
+            if (board[0, 2] == symbol && board[1, 1] == symbol && board[2, 0] == symbol)
             {
                 return true;
             }
@@ -137,12 +264,49 @@ namespace TickTacToe
                     _board[row, column] = ' ';
                 }
             }
+
             MainLabelText = $"You are {_playerSymbol}";
+
+            NotifyPropertyChanged(nameof(Button00Text));
+            NotifyPropertyChanged(nameof(Button01Text));
+            NotifyPropertyChanged(nameof(Button02Text));
+            NotifyPropertyChanged(nameof(Button10Text));
+            NotifyPropertyChanged(nameof(Button20Text));
+            NotifyPropertyChanged(nameof(Button11Text));
+            NotifyPropertyChanged(nameof(Button12Text));
+            NotifyPropertyChanged(nameof(Button21Text));
+            NotifyPropertyChanged(nameof(Button22Text));
+
         }
 
+        private string _mainLabelText;
         public string MainLabelText
         {
-            get; private set;
+            get => _mainLabelText;
+            set
+            {
+                _mainLabelText = value;
+                NotifyPropertyChanged(nameof(MainLabelText));
+            }
+        }
+
+        private string _difficulty = "Easy";
+        public string Difficulty
+        {
+            get => _difficulty;
+            set
+            {
+                _difficulty = value;
+                NotifyPropertyChanged(nameof(Difficulty));
+            }
+        }
+
+        private enum Direction
+        {
+            Left,
+            Right,
+            Up,
+            Down
         }
 
         #region buttons
